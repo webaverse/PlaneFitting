@@ -83,23 +83,30 @@ int main()
 
     double center[3];
     double normal[4];
-    PlaneFitting(points, center, normal);
+    for (int i = 0; i < 100; i++) {
+        std::cerr << "iteration " << i << ": " << points.size() << std::endl;
+        bool ok = PlaneFitting(points, center, normal);
+        if (!ok) {
+            break;
+        }
+        // serialize the center and normal in binary to stdout
+        float fcenter[3] = { (float)center[0], (float)center[1], (float)center[2] };
+        float fnormal[4] = { (float)normal[0], (float)normal[1], (float)normal[2], (float)normal[3] };
+        std::cout.write(reinterpret_cast<char*>(&fcenter[0]), sizeof(fcenter[0]));
+        std::cout.write(reinterpret_cast<char*>(&fcenter[1]), sizeof(fcenter[1]));
+        std::cout.write(reinterpret_cast<char*>(&fcenter[2]), sizeof(fcenter[2]));
+        std::cout.write(reinterpret_cast<char*>(&fnormal[0]), sizeof(fnormal[0]));
+        std::cout.write(reinterpret_cast<char*>(&fnormal[1]), sizeof(fnormal[1]));
+        std::cout.write(reinterpret_cast<char*>(&fnormal[2]), sizeof(fnormal[2]));
+        std::cout.write(reinterpret_cast<char*>(&fnormal[3]), sizeof(fnormal[3]));
+    }
     // serialize the points in binary to stdout
     // for (int i = 0; i < points.size(); i++) {
     //     std::cout.write(reinterpret_cast<char*>(&points[i][0]), sizeof(points[i][0]));
     //     std::cout.write(reinterpret_cast<char*>(&points[i][1]), sizeof(points[i][1]));
     //     std::cout.write(reinterpret_cast<char*>(&points[i][2]), sizeof(points[i][2]));
     // }
-    // serialize the center and normal in binary to stdout
-    float fcenter[3] = { (float)center[0], (float)center[1], (float)center[2] };
-    float fnormal[4] = { (float)normal[0], (float)normal[1], (float)normal[2], (float)normal[3] };
-    std::cout.write(reinterpret_cast<char*>(&fcenter[0]), sizeof(fcenter[0]));
-    std::cout.write(reinterpret_cast<char*>(&fcenter[1]), sizeof(fcenter[1]));
-    std::cout.write(reinterpret_cast<char*>(&fcenter[2]), sizeof(fcenter[2]));
-    std::cout.write(reinterpret_cast<char*>(&fnormal[0]), sizeof(fnormal[0]));
-    std::cout.write(reinterpret_cast<char*>(&fnormal[1]), sizeof(fnormal[1]));
-    std::cout.write(reinterpret_cast<char*>(&fnormal[2]), sizeof(fnormal[2]));
-    std::cout.write(reinterpret_cast<char*>(&fnormal[3]), sizeof(fnormal[3]));
+    
     // std::cout << "num points: " << points.size() << std::endl;
     // std::cout << "points 1: " << points[0][0] << " " << points[0][1] << " " << points[0][2] << std::endl;
     // std::cout << "points 2: " << points[1][0] << " " << points[1][1] << " " << points[1][2] << std::endl;
