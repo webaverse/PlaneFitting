@@ -9,7 +9,7 @@ bool PlaneFitting(std::vector<Vector3VP> &points_input, double* center, double* 
 	int Num = points_input.size();
 	std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> CandPoints;
 	CandPoints.resize(Num);
-// #pragma omp parallel for num_threads(6)
+#pragma omp parallel for num_threads(6)
 	for (int i = 0; i <Num; ++i)
 	{
 		Vector3VP p=points_input[i];

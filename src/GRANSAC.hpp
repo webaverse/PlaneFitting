@@ -34,7 +34,7 @@ namespace GRANSAC
 	public:
 		RANSAC(void)
 		{
-			int nThreads = 1; // std::max(1, omp_get_max_threads());
+			int nThreads = std::max(1, omp_get_max_threads());
 			// std::cout << "[ INFO ]: Maximum usable threads: " << nThreads << std::endl;
 			for (int i = 0; i < nThreads; ++i)
 			{
@@ -82,10 +82,10 @@ namespace GRANSAC
 			std::vector<std::vector<std::shared_ptr<AbstractParameter>>> InliersAccum(m_MaxIterations);
 			m_SampledModels.resize(m_MaxIterations);
 
-// 			int nThreads = std::max(1, omp_get_max_threads());
-// 			omp_set_dynamic(0); // Explicitly disable dynamic teams
-// 			omp_set_num_threads(nThreads);
-// #pragma omp parallel for num_threads(5)
+			int nThreads = std::max(1, omp_get_max_threads());
+			omp_set_dynamic(0); // Explicitly disable dynamic teams
+			omp_set_num_threads(nThreads);
+#pragma omp parallel for num_threads(5)
 			for (int i = 0; i < m_MaxIterations; ++i)
 			{
 				// Select t_NumParams random samples
