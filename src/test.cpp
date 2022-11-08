@@ -60,6 +60,7 @@ int main()
         std::cerr << "iteration " << i << ": " << points.size() << std::endl;
         bool ok = PlaneFitting(points, center, normal);
         if (!ok) {
+            std::cerr << "break" << std::endl;
             break;
         }
         // serialize the center and normal in binary to stdout
@@ -73,6 +74,7 @@ int main()
         std::cout.write(reinterpret_cast<char*>(&fnormal[2]), sizeof(fnormal[2]));
         std::cout.write(reinterpret_cast<char*>(&fnormal[3]), sizeof(fnormal[3]));
     }
+    std::cerr << "done" << std::endl;
     // serialize the points in binary to stdout
     // for (int i = 0; i < points.size(); i++) {
     //     std::cout.write(reinterpret_cast<char*>(&points[i][0]), sizeof(points[i][0]));
