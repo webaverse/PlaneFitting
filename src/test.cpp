@@ -4,7 +4,7 @@
 #include <omp.h>
 #include <opencv2/opencv.hpp>
 
-bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, double* normal)
+bool PlaneFitting(std::vector<Vector3VP> &points_input, double* center, double* normal)
 {
 	int Num = points_input.size();
 	std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> CandPoints;
@@ -25,6 +25,8 @@ bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, do
     int64_t end = cv::getTickCount();
     // std::cout << "RANSAC took: " << GRANSAC::VPFloat(end - start) / GRANSAC::VPFloat(cv::getTickFrequency()) * 1000.0 << " ms." << std::endl;
 	
+    // std::cerr << "best inliers size 1: " << Estimator.GetBestInliers().size() << std::endl;
+
 	auto BestPlane = Estimator.GetBestModel();
 	if (BestPlane == nullptr)
 	{
@@ -38,6 +40,33 @@ bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, do
     {
         normal[i] = BestPlane->m_PlaneCoefs[i];
     }
+
+    // remove the inliers from points_input
+    std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> BestInliers = Estimator.GetBestInliers();
+    std::vector<Vector3VP> points_input_new;
+    for (int i = 0; i < points_input.size(); i++)
+    {
+        bool is_inlier = false;
+        for (int j = 0; j < BestInliers.size(); j++)
+        {
+            Point3D *p = (Point3D*)BestInliers[j].get();
+            if (
+                p->m_Point3D[0] == points_input[i][0] &&
+                p->m_Point3D[1] == points_input[i][1] &&
+                p->m_Point3D[2] == points_input[i][2]
+            ) {
+                is_inlier = true;
+                break;
+            }
+        }
+        if (!is_inlier)
+        {
+            points_input_new.push_back(points_input[i]);
+        }
+    }
+    points_input = std::move(points_input_new);
+
+    // std::cerr << "best inliers size 2: " << Estimator.GetBestInliers().size() << std::endl;
 
 	return true;
 }
