@@ -83,7 +83,7 @@ int main()
 
     double center[3];
     double normal[4];
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 32; i++) {
         std::cerr << "iteration " << i << ": " << points.size() << std::endl;
         bool ok = PlaneFitting(points, center, normal);
         if (!ok) {
