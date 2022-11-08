@@ -3,18 +3,23 @@
 #include "PlaneModel.hpp"
 #include <omp.h>
 #include <opencv2/opencv.hpp>
+#include <mutex>
 
 bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, double* normal)
 {
 	int Num = points_input.size();
 	std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> CandPoints;
+    std::mutex m;
 	CandPoints.resize(Num);
 #pragma omp parallel for num_threads(6)
 	for (int i = 0; i <Num; ++i)
 	{
 		Vector3VP p=points_input[i];
 		std::shared_ptr<GRANSAC::AbstractParameter> CandPt = std::make_shared<Point3D>(p[0], p[1],p[2]);
-		CandPoints[i]=CandPt;
+		{
+            std::lock_guard<std::mutex> lock(m);
+            CandPoints[i]=CandPt;
+        }
 	}
 	
 	GRANSAC::RANSAC<PlaneModel, 3> Estimator;
