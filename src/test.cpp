@@ -9,7 +9,7 @@ bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, do
 	int Num = points_input.size();
 	std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> CandPoints;
 	CandPoints.resize(Num);
-#pragma omp parallel for num_threads(6)
+// #pragma omp parallel for num_threads(6)
 	for (int i = 0; i <Num; ++i)
 	{
 		Vector3VP p=points_input[i];
@@ -23,7 +23,7 @@ bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, do
     int64_t start = cv::getTickCount();
 	Estimator.Estimate(CandPoints);
     int64_t end = cv::getTickCount();
-    std::cout << "RANSAC took: " << GRANSAC::VPFloat(end - start) / GRANSAC::VPFloat(cv::getTickFrequency()) * 1000.0 << " ms." << std::endl;
+    // std::cout << "RANSAC took: " << GRANSAC::VPFloat(end - start) / GRANSAC::VPFloat(cv::getTickFrequency()) * 1000.0 << " ms." << std::endl;
 	
 	auto BestPlane = Estimator.GetBestModel();
 	if (BestPlane == nullptr)
