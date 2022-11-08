@@ -43,43 +43,41 @@ bool PlaneFitting(const std::vector<Vector3VP> &points_input, double* center, do
 }
 int main()
 {
-    // data generation
-    double a = -1/3.0, b = -2/3.0, d =3.0;
-    cv::RNG rng;
-    double w_sigma = 0.1;
-
-    std::vector<Vector3VP> point_cloud;
-    double *center = new double[3];
-    double *coefs = new double[4];
-
-    for(int i=0; i<300; i++)
+    // read plane as Vector3VP array from raw float values on stdin (binary, not string)
+    std::vector<Vector3VP> points;
+    float x, y, z;
+    while (std::cin.read(reinterpret_cast<char*>(&x), sizeof(x)) && std::cin.read(reinterpret_cast<char*>(&y), sizeof(y)) && std::cin.read(reinterpret_cast<char*>(&z), sizeof(z)))
     {
-        for(int j=0; j<400; j++)
-        {
-            double x = double(i);
-            double y = double(j);
-            double z = a*x + b*y + d + rng.gaussian(w_sigma);
-
-            Vector3VP Pt3d = {x, y, z};
-
-            point_cloud.push_back(Pt3d);
-        }
+        Vector3VP point = { x, y, z };
+        points.push_back(point);
     }
 
-    // perform Plane Fitting Algorithm
-    PlaneFitting(point_cloud, center, coefs);
-
-    for(int i=0; i<4; i++)
-    {
-        std::cout << coefs[i] << std::endl;
-    }
-
+    double center[3];
+    double normal[4];
+    PlaneFitting(points, center, normal);
+    // serialize the points in binary to stdout
+    // for (int i = 0; i < points.size(); i++) {
+    //     std::cout.write(reinterpret_cast<char*>(&points[i][0]), sizeof(points[i][0]));
+    //     std::cout.write(reinterpret_cast<char*>(&points[i][1]), sizeof(points[i][1]));
+    //     std::cout.write(reinterpret_cast<char*>(&points[i][2]), sizeof(points[i][2]));
+    // }
+    // serialize the center and normal in binary to stdout
+    float fcenter[3] = { (float)center[0], (float)center[1], (float)center[2] };
+    float fnormal[4] = { (float)normal[0], (float)normal[1], (float)normal[2], (float)normal[3] };
+    std::cout.write(reinterpret_cast<char*>(&fcenter[0]), sizeof(fcenter[0]));
+    std::cout.write(reinterpret_cast<char*>(&fcenter[1]), sizeof(fcenter[1]));
+    std::cout.write(reinterpret_cast<char*>(&fcenter[2]), sizeof(fcenter[2]));
+    std::cout.write(reinterpret_cast<char*>(&fnormal[0]), sizeof(fnormal[0]));
+    std::cout.write(reinterpret_cast<char*>(&fnormal[1]), sizeof(fnormal[1]));
+    std::cout.write(reinterpret_cast<char*>(&fnormal[2]), sizeof(fnormal[2]));
+    std::cout.write(reinterpret_cast<char*>(&fnormal[3]), sizeof(fnormal[3]));
+    // std::cout << "num points: " << points.size() << std::endl;
+    // std::cout << "points 1: " << points[0][0] << " " << points[0][1] << " " << points[0][2] << std::endl;
+    // std::cout << "points 2: " << points[1][0] << " " << points[1][1] << " " << points[1][2] << std::endl;
+    // std::cout << "points 3: " << points[2][0] << " " << points[2][1] << " " << points[2][2] << std::endl;
+    // std::cout << "center: " << center[0] << ", " << center[1] << ", " << center[2] << std::endl;
+    // std::cout << "normal: " << normal[0] << ", " << normal[1] << ", " << normal[2] << ", " << normal[3] << std::endl;
     return 0;
 }
-
-
-
-
-
-
-
+// to generate binary float points (1.0 .. 9.0) from the command line as test data:
+// str=$(for i in {1..32}; do printf '\\x%02x' $i; done); echo -n $str | ./PlaneFittingSample
