@@ -87,7 +87,7 @@ bool PlaneFitting(std::vector<Vector3VP> &points_input, double* center, double* 
     //     std::cerr << "no points left after plane fitting" << std::endl;
     //     abort();
     // }
-    points_input = std::move(points_input_new);
+    points_input = points_input_new;
 
     // std::cerr << "best inliers size 2: " << Estimator.GetBestInliers().size() << std::endl;
 
