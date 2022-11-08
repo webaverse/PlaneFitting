@@ -43,27 +43,50 @@ bool PlaneFitting(std::vector<Vector3VP> &points_input, double* center, double* 
 
     // remove the inliers from points_input
     std::vector<std::shared_ptr<GRANSAC::AbstractParameter>> BestInliers = Estimator.GetBestInliers();
-    std::vector<Vector3VP> points_input_new;
-    for (int i = 0; i < points_input.size(); i++)
+    // index the inliers, by XORing the XYZ coordinates
+    // this may have collisions, but it's unlikely
+    std::set<uint32_t> inliers_idx;
+    // std::cerr << "num best inliers " << BestInliers.size() << std::endl;
+    for (auto inlier : BestInliers)
     {
-        bool is_inlier = false;
-        for (int j = 0; j < BestInliers.size(); j++)
-        {
-            Point3D *p = (Point3D*)BestInliers[j].get();
-            if (
-                p->m_Point3D[0] == points_input[i][0] &&
-                p->m_Point3D[1] == points_input[i][1] &&
-                p->m_Point3D[2] == points_input[i][2]
-            ) {
-                is_inlier = true;
-                break;
-            }
-        }
-        if (!is_inlier)
-        {
-            points_input_new.push_back(points_input[i]);
+        Point3D* p = (Point3D*)inlier.get();
+        float f1 = p->m_Point3D[0];
+        float f2 = p->m_Point3D[1];
+        float f3 = p->m_Point3D[2];
+        uint32_t idx = *(uint32_t*)&f1 ^ *(uint32_t*)&f2 ^ *(uint32_t*)&f3;
+        inliers_idx.insert(idx);
+    }
+    std::cerr << "set size " << inliers_idx.size() << std::endl;
+    // std::cerr << "print set: " << std::endl;
+    // for (auto idx : inliers_idx)
+    // {
+    //     std::cerr << idx << std::endl;
+    // }
+
+    // print first 100 points
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     Point3D* p = (Point3D*)CandPoints[i].get();
+    //     std::cerr << "point " << i << " " << p->m_Point3D[0] <<
+    //         " " << p->m_Point3D[1] <<
+    //         " " << p->m_Point3D[2] << std::endl;
+    // }
+    // copy over thew new points that do not match the index
+    std::vector<Vector3VP> points_input_new;
+    for (int i = 0; i < points_input.size(); i++) {
+        Vector3VP p = points_input[i];
+        float f1 = p[0];
+        float f2 = p[1];
+        float f3 = p[2];
+        uint32_t idx = *(uint32_t*)&f1 ^ *(uint32_t*)&f2 ^ *(uint32_t*)&f3;
+        if (inliers_idx.find(idx) == inliers_idx.end()) {
+            points_input_new.push_back(p);
         }
     }
+    // if (points_input_new.size() == 0) {
+    //     std::cerr << "no points left after plane fitting" << std::endl;
+    //     abort();
+    // }
     points_input = std::move(points_input_new);
 
     // std::cerr << "best inliers size 2: " << Estimator.GetBestInliers().size() << std::endl;
@@ -87,6 +110,7 @@ int main()
         std::cerr << "iteration " << i << ": " << points.size() << std::endl;
         bool ok = PlaneFitting(points, center, normal);
         if (!ok) {
+            std::cerr << "break" << std::endl;
             break;
         }
         // serialize the center and normal in binary to stdout
